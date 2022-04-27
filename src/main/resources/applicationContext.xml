@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+
+	<!-- DataSource 설정 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe" />
+		<property name="username" value="shim" />
+		<property name="password" value="1234" />
+	</bean>
+	
+	<!-- 트랜잭션 관리자 클래스 등록 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut expression="execution(* com.test.app..*(..))" id="txPointcut" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut" />
+	</aop:config>
+	
+	<!-- JdbcTemplate 생성 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+   <context:component-scan base-package="com.test.app." />
+   <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+   <!--  
+   <bean id="log" class="com.test.app.common.LogAdvice" />
+   <bean id="log2" class="com.test.app.common.LogAdvice2" />
+   <bean id="aa" class="com.test.app.common.AroundAdvice" />
+   <bean id="ata" class="com.test.app.common.AfterThrowingAdvice" />
+   <bean id="tt" class="com.test.app.common.test" />
+      
+   <aop:config>
+      <aop:pointcut expression="execution(* com.test.app..*Impl.*(..))" id="aPointcut" />
+      <aop:pointcut expression="execution(* com.test.app..*Impl.get*(..))" id="bPointcut" />
+      
+      <aop:aspect ref="tt">      	
+         <aop:around method="testLog" pointcut-ref="aPointcut" />
+      </aop:aspect>
+      <aop:aspect ref="tt">
+      		<aop:after-returning method="testlog1" pointcut-ref="bPointcut" returning="returnObj" />
+      </aop:aspect>
+   </aop:config>
+   -->
+   
+
+   <!-- <bean class="test.SamsungTV" id="tv">
+      <property name="remote" ref="rB" />
+      <property name="tvid" value="1002" />
+   </bean>
+   <bean class="test.SamsungTV" id="tv" p:remote-ref="rB" p:tvid="1002" />
+
+   <bean class="test.Test" id="test">
+      <property name="map">
+         <map>
+            <entry>
+               <key><value>사과</value></key>
+               <value>apple</value>
+            </entry>
+            <entry>
+               <key><value>바나나</value></key>
+               <value>banana</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+    -->
+
+
+   <!-- 컨테이너가 실행되면 즉시 객체생성됨 == pre-loading(즉시로딩) 방식 -->
+   <!-- 
+   <bean class="test.LgTV" id="tv">
+      <constructor-arg ref="rA" />
+      <constructor-arg value="1001" />
+   </bean>
+   
+    
+   <bean class="test.RemoteA" id="rA" lazy-init="true" />
+   <bean class="test.RemoteB" id="rB" lazy-init="true" />
+    -->
+</beans>
